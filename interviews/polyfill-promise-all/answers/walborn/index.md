@@ -32,6 +32,9 @@ excluded:
 ```jsx
 // На вход к нам приходит массив промисов
 Promise.all = (promises) => {
+	if (promises.length === 0) {                                             //* <= если передали пустой массив или строку
+		return Promise.resolve([])
+	}
   // Здесь будем хранить результаты успешно завершенных промисов
   const results = []
 
@@ -40,13 +43,12 @@ Promise.all = (promises) => {
   let rest = promises.length
 
   // Возвращаем, естественно, новый промис
-  return new Promise((resolve) => {
+	return new Promise((resolve, reject) => {                                //* <= добавить reject так как все таки он должен обрабатывать ошибки
     // Проходимся по списочку
-    promises.forEach((promise, index) => {
-      promise
+    promises.forEach((promise, index) => { 
+			Promise.resolve(promise)                                               //* <= промисами могут быть другие типы данных
         // Если промис завершается успешно
         .then((result) => {
-
           // Кладём его в наше хранилище
           // Причём сохраняем индекс, под которым он был в массиве `promises`
           results[index] = result
@@ -56,7 +58,8 @@ Promise.all = (promises) => {
 
           // Если активных промисов больше нет, то резолвим результат
           if (rest === 0) resolve(results)
-        })
+        }, reject)                                                                //* <= достаточно передать reject как функцию
+        }) 
     })
   })
 }
